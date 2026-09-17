@@ -1,0 +1,12 @@
+{
+  "domain": "chunmi_pre_cooker",
+  "name": "纯米智能电压力锅",
+  "codeowners": ["@931122"],
+  "config_flow": true,
+  "documentation": "https://github.com/931122/chunmi_pre_cooker_eh1",
+  "issue_tracker": "https://github.com/931122/chunmi_pre_cooker_eh1/issues",
+  "integration_type": "device",
+  "iot_class": "local_polling",
+  "requirements": ["cryptography>=3.0"],
+  "version": "1.0.0"
+}

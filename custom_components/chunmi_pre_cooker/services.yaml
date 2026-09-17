@@ -1,0 +1,26 @@
+start_cooking:
+  name: 开始烹饪
+  description: 启动纯米电压力锅烹饪程序
+  fields:
+    mode:
+      name: 烹饪模式
+      description: 预设模式名称（如 大米饭、杂粮饭、开盖收汁等）
+      example: 大米饭
+      selector:
+        text:
+    cook_code:
+      name: 自定义加热曲线码
+      description: 纯米专属358位Hex加热曲线代码
+      example: "020104..."
+      selector:
+        text:
+    name:
+      name: 菜谱显示名称
+      description: 显示在锅体屏幕上的菜谱名称
+      example: 大米饭
+      selector:
+        text:
+
+cancel_cooking:
+  name: 停止烹饪
+  description: 终止当前烹饪程序或保温

@@ -1,0 +1,31 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "配置纯米智能电压力锅",
+        "description": "已尝试从 xiaomi_home 官方插件中自动读取 Token 和设备信息。如信息无误，点击“提交”即可完成添加。",
+        "data": {
+          "host": "设备 IP 地址",
+          "token": "设备 Token (32位)",
+          "did": "设备 DID",
+          "name": "设备显示名称",
+          "model": "设备型号"
+        }
+      }
+    },
+    "error": {
+      "cannot_connect": "无法连接到电压力锅，请检查 IP 地址和局域网通信",
+      "unknown": "发生未知错误"
+    },
+    "abort": {
+      "already_configured": "该设备已经配置过了"
+    }
+  },
+  "entity": {
+    "select": {
+      "cook_mode": {
+        "name": "烹饪模式选择"
+      }
+    }
+  }
+}
