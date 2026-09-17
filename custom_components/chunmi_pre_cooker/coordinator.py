@@ -14,6 +14,7 @@ from .const import (
     DOMAIN,
     PRESET_COOK_MODES,
     customize_cook_code,
+    get_holding_duration_from_code,
     get_mode_base_overhead,
     get_mode_duration_limits,
     get_mode_taste_names,
