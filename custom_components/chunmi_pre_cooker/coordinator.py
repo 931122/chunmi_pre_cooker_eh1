@@ -22,6 +22,7 @@ from .const import (
     get_mode_total_estimated_time,
 )
 from .device import ChunmiDevice
+from .recipe_details import get_recipe_detail
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -88,6 +89,11 @@ class ChunmiCoordinator(DataUpdateCoordinator[Dict[str, Any]]):
     def all_modes_estimated_time_dict(self) -> Dict[str, str]:
         """Return dictionary of estimated total cooking time for all preset modes."""
         return ALL_MODES_ESTIMATED_TIME_CACHE
+
+    @property
+    def current_mode_detail(self) -> Dict[str, Any]:
+        """Return full recipe detail for currently selected mode."""
+        return get_recipe_detail(self.selected_mode)
 
     async def async_set_selected_mode(self, mode: str) -> None:
         """Set selected cooking mode and reset taste and duration to defaults."""

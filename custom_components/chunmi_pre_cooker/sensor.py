@@ -161,8 +161,17 @@ class ChunmiCurrentMenuSensor(ChunmiBaseSensor):
     def extra_state_attributes(self) -> dict:
         """Return extra state attributes."""
         est_total = self.coordinator.current_mode_estimated_total_time
+        detail = self.coordinator.current_mode_detail
+        steps = detail.get("steps", [])
+        steps_text = "\n".join(f"{idx+1}. {s}" for idx, s in enumerate(steps))
         return {
             "selected_preset_mode": self.coordinator.selected_mode,
+            "practice": detail.get("practice", "家常烹饪"),
+            "recipe_description": detail.get("description", ""),
+            "recipe_ingredients": detail.get("ingredients", []),
+            "recipe_steps": steps,
+            "recipe_practice_text": steps_text,
+            "recipe_tips": detail.get("tips", ""),
             "taste": self.coordinator.current_taste_name,
             "holding_duration": f"{self.coordinator.selected_duration} 分钟",
             "estimated_total_time": f"约 {est_total} 分钟" if est_total < 1440 else "持续恒温",

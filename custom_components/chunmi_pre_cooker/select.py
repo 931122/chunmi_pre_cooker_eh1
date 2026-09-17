@@ -61,10 +61,19 @@ class ChunmiCookModeSelect(ChunmiCookerBaseSelect):
 
     @property
     def extra_state_attributes(self) -> dict:
-        """Return extra state attributes with estimated cooking time."""
+        """Return extra state attributes with practice, recipe steps, and estimated time."""
         est_total = self.coordinator.current_mode_estimated_total_time
         limits = self.coordinator.current_mode_duration_limits
+        detail = self.coordinator.current_mode_detail
+        steps = detail.get("steps", [])
+        steps_text = "\n".join(f"{idx+1}. {s}" for idx, s in enumerate(steps))
         return {
+            "practice": detail.get("practice", "家常烹饪"),
+            "recipe_description": detail.get("description", ""),
+            "recipe_ingredients": detail.get("ingredients", []),
+            "recipe_steps": steps,
+            "recipe_practice_text": steps_text,
+            "recipe_tips": detail.get("tips", ""),
             "estimated_cooking_time": f"约 {est_total} 分钟" if est_total < 1440 else "持续恒温",
             "estimated_cooking_minutes": est_total,
             "holding_duration": f"{self.coordinator.selected_duration} 分钟",
