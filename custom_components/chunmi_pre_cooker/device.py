@@ -133,7 +133,19 @@ class ChunmiDevice:
 
     async def async_get_props(self) -> Dict[str, Any]:
         """Fetch all relevant properties from device."""
-        props_to_fetch = ["status", "temp", "t_left", "menu", "t_cook", "kpa", "c_lock", "c_status"]
+        props_to_fetch = [
+            "status",
+            "s_cook1",
+            "temp",
+            "t_left",
+            "t_kw",
+            "t_pre",
+            "menu",
+            "t_cook",
+            "kpa",
+            "c_lock",
+            "c_status",
+        ]
         data: Dict[str, Any] = {}
 
         for prop in props_to_fetch:

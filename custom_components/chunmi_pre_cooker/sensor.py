@@ -11,7 +11,7 @@ from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
-from .const import DOMAIN, STATUS_MAP
+from .const import DOMAIN, PHASE_MAP, STATUS_MAP
 from .coordinator import ChunmiCoordinator
 
 
@@ -24,6 +24,7 @@ async def async_setup_entry(
     coordinator: ChunmiCoordinator = hass.data[DOMAIN][config_entry.entry_id]["coordinator"]
     async_add_entities([
         ChunmiStatusSensor(coordinator, config_entry),
+        ChunmiPhaseSensor(coordinator, config_entry),
         ChunmiLeftTimeSensor(coordinator, config_entry),
         ChunmiTemperatureSensor(coordinator, config_entry),
         ChunmiPressureSensor(coordinator, config_entry),
@@ -66,8 +67,61 @@ class ChunmiStatusSensor(ChunmiBaseSensor):
     @property
     def native_value(self) -> str:
         """Return human-readable status."""
-        val = self.coordinator.data.get("status")
-        return STATUS_MAP.get(val, f"未知状态({val})")
+        status = self.coordinator.data.get("status")
+        s_cook1 = self.coordinator.data.get("s_cook1", 0)
+
+        # Precise phase overrides if available
+        if s_cook1 == 6 or status == 3:
+            return "保温中"
+        if s_cook1 == 7:
+            return "已完成"
+        if status == 4:
+            return "预约中"
+        if status == 2:
+            return "烹饪中"
+        return STATUS_MAP.get(status, f"未知状态({status})")
+
+    @property
+    def extra_state_attributes(self) -> dict:
+        """Return extra state attributes."""
+        status = self.coordinator.data.get("status")
+        s_cook1 = self.coordinator.data.get("s_cook1", 0)
+        return {
+            "status_code": status,
+            "phase_code": s_cook1,
+            "phase": PHASE_MAP.get(s_cook1, "空闲"),
+            "is_cooking": status == 2,
+            "is_keep_warm": status == 3 or s_cook1 == 6,
+            "is_order": status == 4,
+        }
+
+
+class ChunmiPhaseSensor(ChunmiBaseSensor):
+    """Sensor for detailed cooking phase."""
+
+    _attr_name = "烹饪阶段"
+    _attr_icon = "mdi:progress-clock"
+
+    def __init__(self, coordinator: ChunmiCoordinator, config_entry: ConfigEntry):
+        super().__init__(coordinator, config_entry)
+        self._attr_unique_id = f"{config_entry.data['did']}_phase"
+
+    @property
+    def native_value(self) -> str:
+        """Return current detailed cooking phase."""
+        s_cook1 = self.coordinator.data.get("s_cook1", 0)
+        status = self.coordinator.data.get("status", 10)
+        if status in (1, 10) and s_cook1 == 0:
+            return "空闲"
+        return PHASE_MAP.get(s_cook1, "空闲")
+
+    @property
+    def extra_state_attributes(self) -> dict:
+        """Return phase attributes."""
+        return {
+            "phase_code": self.coordinator.data.get("s_cook1", 0),
+            "status_code": self.coordinator.data.get("status"),
+        }
 
 
 class ChunmiLeftTimeSensor(ChunmiBaseSensor):
@@ -88,8 +142,16 @@ class ChunmiLeftTimeSensor(ChunmiBaseSensor):
         """Return left time in seconds."""
         val = self.coordinator.data.get("t_left", 0)
         status = self.coordinator.data.get("status", 10)
-        # Device reports t_left in seconds. When idle/paused (status 1/10/5) or > 86400s, treat as 0
-        if status in (1, 10, 5) or val > 86400:
+        s_cook1 = self.coordinator.data.get("s_cook1", 0)
+
+        # When in reservation/delay mode (status 4), return reservation countdown in seconds
+        if status == 4:
+            t_pre = self.coordinator.data.get("t_pre", 0)
+            return int(t_pre * 60) if t_pre > 0 else int(val)
+
+        # When idle/standby (1, 10), paused (5), keep-warm (3 or s_cook1==6), or finished (s_cook1==7),
+        # remaining cooking time is 0
+        if status in (1, 10, 5, 3) or s_cook1 in (6, 7) or val > 86400:
             return 0
         return int(val)
 
@@ -122,9 +184,25 @@ class ChunmiLeftTimeSensor(ChunmiBaseSensor):
         else:
             est_total_str = f"约 {est_total} 分钟"
 
+        # Keep warm duration calculation
+        t_kw = int(self.coordinator.data.get("t_kw", 0))
+        kw_h = t_kw // 3600
+        kw_m = (t_kw % 3600) // 60
+        kw_s = t_kw % 60
+        if kw_h > 0:
+            kw_formatted = f"{kw_h}小时{kw_m}分{kw_s}秒"
+        elif kw_m > 0:
+            kw_formatted = f"{kw_m}分{kw_s}秒"
+        else:
+            kw_formatted = f"{kw_s}秒"
+
+        s_cook1 = self.coordinator.data.get("s_cook1", 0)
+        status = self.coordinator.data.get("status", 10)
+
         return {
             "mode": self.coordinator.selected_mode,
             "taste": self.coordinator.current_taste_name,
+            "phase": PHASE_MAP.get(s_cook1, "空闲"),
             "remaining_time_formatted": formatted,
             "remaining_time_hms": hms,
             "remaining_hours": hours,
@@ -132,6 +210,8 @@ class ChunmiLeftTimeSensor(ChunmiBaseSensor):
             "remaining_seconds": seconds,
             "total_remaining_minutes": val // 60,
             "total_remaining_seconds": val,
+            "keep_warm_seconds": t_kw,
+            "keep_warm_formatted": kw_formatted if (t_kw > 0 or s_cook1 == 6 or status == 3) else "未保温",
             "preset_estimated_total_time": est_total_str,
             "preset_estimated_total_minutes": est_total,
             "selected_holding_duration": f"{self.coordinator.selected_duration} 分钟",
