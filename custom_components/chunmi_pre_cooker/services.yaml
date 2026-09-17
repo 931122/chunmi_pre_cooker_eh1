@@ -4,10 +4,25 @@ start_cooking:
   fields:
     mode:
       name: 烹饪模式
-      description: 预设模式名称（如 大米饭、杂粮饭、开盖收汁等）
+      description: 预设模式名称（如 大米饭、杂粮饭、土豆炖排骨等）
       example: 大米饭
       selector:
         text:
+    taste:
+      name: 口感偏好
+      description: 口感选择（0 或 软糯/酥软、1 或 适中、2 或 嚼劲/弹润）
+      example: 软糯
+      selector:
+        text:
+    duration:
+      name: 保压时间 (分钟)
+      description: 自定义保压时间（根据模式在 6~60 分钟之间）
+      example: 20
+      selector:
+        number:
+          min: 1
+          max: 120
+          unit_of_measurement: min
     cook_code:
       name: 自定义加热曲线码
       description: 纯米专属358位Hex加热曲线代码

@@ -11,7 +11,7 @@ from .device import ChunmiDevice
 
 _LOGGER = logging.getLogger(__name__)
 
-PLATFORMS = [Platform.SENSOR, Platform.SELECT, Platform.BUTTON]
+PLATFORMS = [Platform.SENSOR, Platform.SELECT, Platform.BUTTON, Platform.NUMBER]
 
 
 async def async_setup(hass: HomeAssistant, config: dict) -> bool:
@@ -22,6 +22,8 @@ async def async_setup(hass: HomeAssistant, config: dict) -> bool:
         """Handle start_cooking service call."""
         mode = call.data.get("mode")
         cook_code = call.data.get("cook_code")
+        taste = call.data.get("taste")
+        duration = call.data.get("duration")
         name = call.data.get("name") or mode or "烹饪"
 
         for entry_id, entry_data in hass.data.get(DOMAIN, {}).items():
@@ -31,8 +33,8 @@ async def async_setup(hass: HomeAssistant, config: dict) -> bool:
             if cook_code:
                 await coord.device.async_start_cooking(name, cook_code, hass=hass)
                 await coord.async_request_refresh()
-            elif mode:
-                await coord.async_start_cooking(mode)
+            else:
+                await coord.async_start_cooking(mode_name=mode, taste=taste, duration=duration)
 
     async def async_handle_cancel_cooking(call: ServiceCall):
         """Handle cancel_cooking service call."""

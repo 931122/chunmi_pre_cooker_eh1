@@ -25,6 +25,14 @@
     "select": {
       "cook_mode": {
         "name": "烹饪模式选择"
+      },
+      "taste": {
+        "name": "口感偏好"
+      }
+    },
+    "number": {
+      "holding_duration": {
+        "name": "保压时间"
       }
     }
   }

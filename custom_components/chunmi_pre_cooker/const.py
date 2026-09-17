@@ -43,6 +43,124 @@ def decode_menu_gbk(hex_str: str) -> str:
         pass
     return "自定义模式"
 
+
+ALL_TASTE_NAMES = [
+    "绵软", "酥软", "软糯", "香浓", "浓稠", "适中", "嚼劲", "劲道", "紧实", "清亮", "弹润", "弹嫩", "清鲜"
+]
+
+
+def calc_crc16_chunmi(data: bytearray, count: int) -> int:
+    """Calculate CRC-16-CCITT checksum for Chunmi CookProfile."""
+    crc = 0
+    for j in range(count):
+        crc = crc ^ (data[j] << 8)
+        for _ in range(8):
+            if (crc & 0x8000) != 0:
+                crc = ((crc << 1) ^ 0x1021) & 0xFFFF
+            else:
+                crc = (crc << 1) & 0xFFFF
+    return crc & 0xFFFF
+
+
+def get_mode_taste_names(cook_code_hex: str) -> list:
+    """Return the 3 taste names for given cook code."""
+    try:
+        b = bytes.fromhex(cook_code_hex)
+        t0 = ALL_TASTE_NAMES[b[17]] if b[17] < len(ALL_TASTE_NAMES) else "偏软"
+        t1 = ALL_TASTE_NAMES[b[18]] if b[18] < len(ALL_TASTE_NAMES) else "适中"
+        t2 = ALL_TASTE_NAMES[b[19]] if b[19] < len(ALL_TASTE_NAMES) else "偏硬"
+        if t0 == t1 == t2:
+            return [t0]
+        return [t0, t1, t2]
+    except Exception:
+        return ["软糯", "适中", "嚼劲"]
+
+
+def get_mode_duration_limits(cook_code_hex: str) -> tuple:
+    """Return (min_dur, max_dur, default_dur) in minutes."""
+    try:
+        b = bytes.fromhex(cook_code_hex)
+        d_min = b[12] * 60 + b[13]
+        d_max = b[10] * 60 + b[11]
+        d_def = b[8] * 60 + b[9]
+        if d_min <= 0:
+            d_min = 1
+        if d_max < d_min:
+            d_max = max(d_min, d_def)
+        if d_def < d_min or d_def > d_max:
+            d_def = d_min
+        return (d_min, d_max, d_def)
+    except Exception:
+        return (5, 60, 20)
+
+
+def customize_cook_code(
+    base_hex: str,
+    taste_index: int = None,
+    duration: int = None,
+) -> str:
+    """Modify taste and/or holding pressure duration of a base cook code."""
+    data = bytearray(bytes.fromhex(base_hex))
+
+    if taste_index is not None and 0 <= taste_index <= 2:
+        data[150] = taste_index
+
+    if duration is not None and duration > 0:
+        def _get_pressure_time(b1: int, b2: int) -> int:
+            if (b1 & 0xFF) == 0xFF or (b2 & 0xFF) == 0xFF:
+                return 0xFF
+            elif (b1 & 0x80) == 0x80:
+                return b1 * 60 + b2
+            else:
+                return b1
+
+        t1 = _get_pressure_time(data[75], data[76])
+        t2 = _get_pressure_time(data[85], data[86])
+        t3 = _get_pressure_time(data[95], data[96])
+
+        # Stage 0
+        if (data[75] & 0xFF) == 0xFF or (data[76] & 0xFF) == 0xFF:
+            val = duration
+            if t2 != 0xFF:
+                val -= t2
+            if t3 != 0xFF:
+                val -= t3
+            val = max(0, min(255, val))
+            data[156] = val
+            data[159] = val
+            data[162] = val
+
+        # Stage 1
+        if (data[85] & 0xFF) == 0xFF or (data[86] & 0xFF) == 0xFF:
+            val = duration
+            if t1 != 0xFF:
+                val -= t1
+            if t3 != 0xFF:
+                val -= t3
+            val = max(0, min(255, val))
+            data[157] = val
+            data[160] = val
+            data[163] = val
+
+        # Stage 2
+        if (data[95] & 0xFF) == 0xFF or (data[96] & 0xFF) == 0xFF:
+            val = duration
+            if t1 != 0xFF:
+                val -= t1
+            if t2 != 0xFF:
+                val -= t2
+            val = max(0, min(255, val))
+            data[158] = val
+            data[161] = val
+            data[164] = val
+
+    # Recalculate CRC16 across data[0..len-3]
+    crc = calc_crc16_chunmi(data, len(data) - 2)
+    data[-2] = (crc >> 8) & 0xFF
+    data[-1] = crc & 0xFF
+    return data.hex()
+
+
 # Presets extracted directly from Chunmi / Joyami Cloud for chunmi.pre_cooker.eh1
 PRESET_COOK_MODES = {
     "杂粮饭": {
