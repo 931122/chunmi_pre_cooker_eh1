@@ -14,3 +14,4 @@ presets_*.json
 presets_code.py
 RKStorage*.db
 miio.db
+cloud_recipes.json

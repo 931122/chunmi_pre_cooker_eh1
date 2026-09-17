@@ -13,6 +13,7 @@ from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, Upda
 from .const import (
     DOMAIN,
     PRESET_COOK_MODES,
+    ALL_MODES_ESTIMATED_TIME_CACHE,
     customize_cook_code,
     get_holding_duration_from_code,
     get_mode_base_overhead,
@@ -86,14 +87,7 @@ class ChunmiCoordinator(DataUpdateCoordinator[Dict[str, Any]]):
     @property
     def all_modes_estimated_time_dict(self) -> Dict[str, str]:
         """Return dictionary of estimated total cooking time for all preset modes."""
-        result = {}
-        for name, p in PRESET_COOK_MODES.items():
-            if name == "保温":
-                result[name] = "持续恒温"
-            else:
-                mins = get_mode_total_estimated_time(p["cook_code"])
-                result[name] = f"约 {mins} 分钟"
-        return result
+        return ALL_MODES_ESTIMATED_TIME_CACHE
 
     async def async_set_selected_mode(self, mode: str) -> None:
         """Set selected cooking mode and reset taste and duration to defaults."""
