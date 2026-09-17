@@ -59,6 +59,20 @@ class ChunmiCookModeSelect(ChunmiCookerBaseSelect):
         """Return the currently selected cooking mode."""
         return self.coordinator.selected_mode
 
+    @property
+    def extra_state_attributes(self) -> dict:
+        """Return extra state attributes with estimated cooking time."""
+        est_total = self.coordinator.current_mode_estimated_total_time
+        limits = self.coordinator.current_mode_duration_limits
+        return {
+            "estimated_cooking_time": f"约 {est_total} 分钟" if est_total < 1440 else "持续恒温",
+            "estimated_cooking_minutes": est_total,
+            "holding_duration": f"{self.coordinator.selected_duration} 分钟",
+            "holding_duration_range": f"{limits[0]}~{limits[1]} 分钟",
+            "taste": self.coordinator.current_taste_name,
+            "all_modes_estimated_time": self.coordinator.all_modes_estimated_time_dict,
+        }
+
     async def async_select_option(self, option: str) -> None:
         """Change the selected cooking mode."""
         if option in self._attr_options:
@@ -85,6 +99,16 @@ class ChunmiTasteSelect(ChunmiCookerBaseSelect):
     def current_option(self) -> str:
         """Return the currently selected taste name."""
         return self.coordinator.current_taste_name
+
+    @property
+    def extra_state_attributes(self) -> dict:
+        """Return extra state attributes."""
+        est_total = self.coordinator.current_mode_estimated_total_time
+        return {
+            "mode": self.coordinator.selected_mode,
+            "holding_duration": f"{self.coordinator.selected_duration} 分钟",
+            "estimated_cooking_time": f"约 {est_total} 分钟" if est_total < 1440 else "持续恒温",
+        }
 
     async def async_select_option(self, option: str) -> None:
         """Change the selected taste option."""

@@ -14,8 +14,10 @@ from .const import (
     DOMAIN,
     PRESET_COOK_MODES,
     customize_cook_code,
+    get_mode_base_overhead,
     get_mode_duration_limits,
     get_mode_taste_names,
+    get_mode_total_estimated_time,
 )
 from .device import ChunmiDevice
 
@@ -62,7 +64,35 @@ class ChunmiCoordinator(DataUpdateCoordinator[Dict[str, Any]]):
     def current_mode_duration_limits(self) -> tuple:
         """Return (min, max, default) duration in minutes for current mode."""
         code = self.current_mode_preset["cook_code"]
-        return get_mode_duration_limits(code)
+        min_v, max_v, _ = get_mode_duration_limits(code)
+        def_v = get_holding_duration_from_code(code, taste_idx=self.selected_taste_idx)
+        return (min_v, max_v, def_v)
+
+    @property
+    def current_mode_base_overhead(self) -> int:
+        """Return fixed heating/exhausting overhead in minutes for current mode."""
+        code = self.current_mode_preset["cook_code"]
+        return get_mode_base_overhead(code)
+
+    @property
+    def current_mode_estimated_total_time(self) -> int:
+        """Return total estimated cooking time in minutes for current mode & duration."""
+        code = self.current_mode_preset["cook_code"]
+        if self.selected_mode == "保温":
+            return 1440
+        return get_mode_total_estimated_time(code, duration=self.selected_duration)
+
+    @property
+    def all_modes_estimated_time_dict(self) -> Dict[str, str]:
+        """Return dictionary of estimated total cooking time for all preset modes."""
+        result = {}
+        for name, p in PRESET_COOK_MODES.items():
+            if name == "保温":
+                result[name] = "持续恒温"
+            else:
+                mins = get_mode_total_estimated_time(p["cook_code"])
+                result[name] = f"约 {mins} 分钟"
+        return result
 
     async def async_set_selected_mode(self, mode: str) -> None:
         """Set selected cooking mode and reset taste and duration to defaults."""
@@ -74,10 +104,12 @@ class ChunmiCoordinator(DataUpdateCoordinator[Dict[str, Any]]):
             self.async_update_listeners()
 
     async def async_set_selected_taste(self, taste_name: str) -> None:
-        """Set selected taste option."""
+        """Set selected taste option and adjust default holding duration."""
         options = self.current_mode_taste_options
         if taste_name in options:
             self.selected_taste_idx = options.index(taste_name)
+            code = self.current_mode_preset["cook_code"]
+            self.selected_duration = get_holding_duration_from_code(code, self.selected_taste_idx)
             self.async_update_listeners()
 
     async def async_set_selected_duration(self, duration: int) -> None:

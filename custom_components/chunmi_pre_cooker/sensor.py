@@ -91,6 +91,18 @@ class ChunmiLeftTimeSensor(ChunmiBaseSensor):
             return 0
         return int(val)
 
+    @property
+    def extra_state_attributes(self) -> dict:
+        """Return extra state attributes."""
+        est_total = self.coordinator.current_mode_estimated_total_time
+        return {
+            "mode": self.coordinator.selected_mode,
+            "taste": self.coordinator.current_taste_name,
+            "preset_estimated_total_time": f"约 {est_total} 分钟" if est_total < 1440 else "持续恒温",
+            "preset_estimated_total_minutes": est_total,
+            "selected_holding_duration": f"{self.coordinator.selected_duration} 分钟",
+        }
+
 
 class ChunmiTemperatureSensor(ChunmiBaseSensor):
     """Sensor for temperature."""
@@ -144,6 +156,17 @@ class ChunmiCurrentMenuSensor(ChunmiBaseSensor):
     def native_value(self) -> str:
         """Return current decoded menu name."""
         return self.coordinator.data.get("menu_name", "空闲")
+
+    @property
+    def extra_state_attributes(self) -> dict:
+        """Return extra state attributes."""
+        est_total = self.coordinator.current_mode_estimated_total_time
+        return {
+            "selected_preset_mode": self.coordinator.selected_mode,
+            "taste": self.coordinator.current_taste_name,
+            "holding_duration": f"{self.coordinator.selected_duration} 分钟",
+            "estimated_total_time": f"约 {est_total} 分钟" if est_total < 1440 else "持续恒温",
+        }
 
 
 class ChunmiLidStatusSensor(ChunmiBaseSensor):

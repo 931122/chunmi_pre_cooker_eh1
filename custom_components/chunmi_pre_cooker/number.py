@@ -64,6 +64,21 @@ class ChunmiHoldingDurationNumber(CoordinatorEntity[ChunmiCoordinator], NumberEn
         """Return currently selected holding duration."""
         return float(self.coordinator.selected_duration)
 
+    @property
+    def extra_state_attributes(self) -> dict:
+        """Return extra state attributes."""
+        est_total = self.coordinator.current_mode_estimated_total_time
+        base_overhead = self.coordinator.current_mode_base_overhead
+        limits = self.coordinator.current_mode_duration_limits
+        return {
+            "mode": self.coordinator.selected_mode,
+            "taste": self.coordinator.current_taste_name,
+            "estimated_total_time": f"约 {est_total} 分钟" if est_total < 1440 else "持续恒温",
+            "estimated_total_minutes": est_total,
+            "base_overhead_minutes": base_overhead,
+            "holding_duration_range": f"{limits[0]}~{limits[1]} 分钟",
+        }
+
     async def async_set_native_value(self, value: float) -> None:
         """Set holding pressure duration."""
         await self.coordinator.async_set_selected_duration(int(value))
