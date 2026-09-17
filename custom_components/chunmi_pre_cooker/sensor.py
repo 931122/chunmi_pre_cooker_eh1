@@ -6,6 +6,7 @@ from homeassistant.components.sensor import (
     SensorStateClass,
 )
 from homeassistant.config_entries import ConfigEntry
+from homeassistant.const import UnitOfTime
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
@@ -74,7 +75,7 @@ class ChunmiLeftTimeSensor(ChunmiBaseSensor):
 
     _attr_name = "剩余时间"
     _attr_icon = "mdi:timer-sand"
-    _attr_native_unit_of_measurement = "min"
+    _attr_native_unit_of_measurement = UnitOfTime.SECONDS
     _attr_device_class = SensorDeviceClass.DURATION
 
     def __init__(self, coordinator: ChunmiCoordinator, config_entry: ConfigEntry):
@@ -83,11 +84,11 @@ class ChunmiLeftTimeSensor(ChunmiBaseSensor):
 
     @property
     def native_value(self) -> int:
-        """Return left time in minutes."""
+        """Return left time in seconds."""
         val = self.coordinator.data.get("t_left", 0)
-        # When idle, device may report huge dummy values like 3526
         status = self.coordinator.data.get("status", 10)
-        if status in (1, 10, 5) or val > 1440:
+        # Device reports t_left in seconds. When idle/paused (status 1/10/5) or > 86400s, treat as 0
+        if status in (1, 10, 5) or val > 86400:
             return 0
         return int(val)
 
@@ -95,9 +96,15 @@ class ChunmiLeftTimeSensor(ChunmiBaseSensor):
     def extra_state_attributes(self) -> dict:
         """Return extra state attributes."""
         est_total = self.coordinator.current_mode_estimated_total_time
+        val = self.native_value
+        m = val // 60
+        s = val % 60
         return {
             "mode": self.coordinator.selected_mode,
             "taste": self.coordinator.current_taste_name,
+            "remaining_time_formatted": f"{m}分{s}秒" if val > 0 else "0分0秒",
+            "remaining_minutes": m,
+            "remaining_seconds": val,
             "preset_estimated_total_time": f"约 {est_total} 分钟" if est_total < 1440 else "持续恒温",
             "preset_estimated_total_minutes": est_total,
             "selected_holding_duration": f"{self.coordinator.selected_duration} 分钟",
