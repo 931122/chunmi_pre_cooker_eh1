@@ -97,16 +97,42 @@ class ChunmiLeftTimeSensor(ChunmiBaseSensor):
     def extra_state_attributes(self) -> dict:
         """Return extra state attributes."""
         est_total = self.coordinator.current_mode_estimated_total_time
-        val = self.native_value
-        m = val // 60
-        s = val % 60
+        val = self.native_value  # total remaining seconds
+        hours = val // 3600
+        minutes = (val % 3600) // 60
+        seconds = val % 60
+
+        if val <= 0:
+            formatted = "0秒"
+        elif hours > 0:
+            formatted = f"{hours}小时{minutes}分{seconds}秒"
+        elif minutes > 0:
+            formatted = f"{minutes}分{seconds}秒"
+        else:
+            formatted = f"{seconds}秒"
+
+        hms = f"{hours:02d}:{minutes:02d}:{seconds:02d}"
+
+        if est_total >= 1440:
+            est_total_str = "持续恒温"
+        elif est_total >= 60:
+            eh = est_total // 60
+            em = est_total % 60
+            est_total_str = f"约 {eh}小时{em}分钟" if em > 0 else f"约 {eh}小时"
+        else:
+            est_total_str = f"约 {est_total} 分钟"
+
         return {
             "mode": self.coordinator.selected_mode,
             "taste": self.coordinator.current_taste_name,
-            "remaining_time_formatted": f"{m}分{s}秒" if val > 0 else "0分0秒",
-            "remaining_minutes": m,
-            "remaining_seconds": val,
-            "preset_estimated_total_time": f"约 {est_total} 分钟" if est_total < 1440 else "持续恒温",
+            "remaining_time_formatted": formatted,
+            "remaining_time_hms": hms,
+            "remaining_hours": hours,
+            "remaining_minutes": minutes,
+            "remaining_seconds": seconds,
+            "total_remaining_minutes": val // 60,
+            "total_remaining_seconds": val,
+            "preset_estimated_total_time": est_total_str,
             "preset_estimated_total_minutes": est_total,
             "selected_holding_duration": f"{self.coordinator.selected_duration} 分钟",
         }
