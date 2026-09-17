@@ -77,6 +77,7 @@ class ChunmiLeftTimeSensor(ChunmiBaseSensor):
     _attr_icon = "mdi:timer-sand"
     _attr_native_unit_of_measurement = UnitOfTime.SECONDS
     _attr_device_class = SensorDeviceClass.DURATION
+    _attr_suggested_display_precision = 0
 
     def __init__(self, coordinator: ChunmiCoordinator, config_entry: ConfigEntry):
         super().__init__(coordinator, config_entry)
