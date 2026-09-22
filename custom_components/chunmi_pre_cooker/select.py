@@ -6,7 +6,7 @@ from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
-from .const import DOMAIN, PRESET_COOK_MODES
+from .const import ALL_RECIPE_SLUGS, DOMAIN, PRESET_COOK_MODES
 from .coordinator import ChunmiCoordinator
 
 
@@ -47,17 +47,17 @@ class ChunmiCookModeSelect(ChunmiCookerBaseSelect):
     """Select entity to choose cooking mode."""
 
     _attr_icon = "mdi:rice"
+    _attr_translation_key = "cook_mode"
 
     def __init__(self, coordinator: ChunmiCoordinator, config_entry: ConfigEntry):
         super().__init__(coordinator, config_entry)
-        self._attr_name = "烹饪模式选择"
         self._attr_unique_id = f"{config_entry.data['did']}_cook_mode_select"
-        self._attr_options = list(PRESET_COOK_MODES.keys())
+        self._attr_options = ALL_RECIPE_SLUGS
 
     @property
     def current_option(self) -> str:
-        """Return the currently selected cooking mode."""
-        return self.coordinator.selected_mode
+        """Return the currently selected cooking mode slug."""
+        return self.coordinator.selected_mode_slug
 
     @property
     def extra_state_attributes(self) -> dict:
@@ -68,6 +68,8 @@ class ChunmiCookModeSelect(ChunmiCookerBaseSelect):
         steps = detail.get("steps", [])
         steps_text = "\n".join(f"{idx+1}. {s}" for idx, s in enumerate(steps))
         return {
+            "mode_name": self.coordinator.selected_mode,
+            "mode_slug": self.coordinator.selected_mode_slug,
             "practice": detail.get("practice", "家常烹饪"),
             "recipe_description": detail.get("description", ""),
             "recipe_ingredients": detail.get("ingredients", []),
@@ -84,30 +86,29 @@ class ChunmiCookModeSelect(ChunmiCookerBaseSelect):
 
     async def async_select_option(self, option: str) -> None:
         """Change the selected cooking mode."""
-        if option in self._attr_options:
-            await self.coordinator.async_set_selected_mode(option)
-            self.async_write_ha_state()
+        await self.coordinator.async_set_selected_mode(option)
+        self.async_write_ha_state()
 
 
 class ChunmiTasteSelect(ChunmiCookerBaseSelect):
     """Select entity to choose cooking taste preference."""
 
     _attr_icon = "mdi:food-variant"
+    _attr_translation_key = "taste"
 
     def __init__(self, coordinator: ChunmiCoordinator, config_entry: ConfigEntry):
         super().__init__(coordinator, config_entry)
-        self._attr_name = "口感偏好"
         self._attr_unique_id = f"{config_entry.data['did']}_taste_select"
 
     @property
     def options(self) -> list[str]:
-        """Return taste options for current mode."""
-        return self.coordinator.current_mode_taste_options
+        """Return taste option slugs for current mode."""
+        return self.coordinator.current_mode_taste_slugs
 
     @property
     def current_option(self) -> str:
-        """Return the currently selected taste name."""
-        return self.coordinator.current_taste_name
+        """Return the currently selected taste slug."""
+        return self.coordinator.current_taste_slug
 
     @property
     def extra_state_attributes(self) -> dict:
@@ -115,6 +116,9 @@ class ChunmiTasteSelect(ChunmiCookerBaseSelect):
         est_total = self.coordinator.current_mode_estimated_total_time
         return {
             "mode": self.coordinator.selected_mode,
+            "mode_slug": self.coordinator.selected_mode_slug,
+            "taste_name": self.coordinator.current_taste_name,
+            "taste_slug": self.coordinator.current_taste_slug,
             "holding_duration": f"{self.coordinator.selected_duration} 分钟",
             "estimated_cooking_time": f"约 {est_total} 分钟" if est_total < 1440 else "持续恒温",
         }

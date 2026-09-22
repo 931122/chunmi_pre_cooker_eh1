@@ -48,7 +48,7 @@ class ChunmiCookerBaseButton(CoordinatorEntity[ChunmiCoordinator], ButtonEntity)
 class ChunmiStartCookButton(ChunmiCookerBaseButton):
     """Button to start cooking with currently selected mode."""
 
-    _attr_name = "开始烹饪"
+    _attr_translation_key = "start_cooking"
     _attr_icon = "mdi:pot-steam"
 
     def __init__(self, coordinator: ChunmiCoordinator, config_entry: ConfigEntry):
@@ -63,7 +63,7 @@ class ChunmiStartCookButton(ChunmiCookerBaseButton):
 class ChunmiCancelCookButton(ChunmiCookerBaseButton):
     """Button to stop/cancel cooking."""
 
-    _attr_name = "停止烹饪"
+    _attr_translation_key = "cancel_cooking"
     _attr_icon = "mdi:stop-circle-outline"
 
     def __init__(self, coordinator: ChunmiCoordinator, config_entry: ConfigEntry):
@@ -78,7 +78,7 @@ class ChunmiCancelCookButton(ChunmiCookerBaseButton):
 class ChunmiOpenLidJuiceButton(ChunmiCookerBaseButton):
     """Button to start 开盖收汁 directly."""
 
-    _attr_name = "开盖收汁"
+    _attr_translation_key = "open_lid_juice"
     _attr_icon = "mdi:pot-steam-outline"
 
     def __init__(self, coordinator: ChunmiCoordinator, config_entry: ConfigEntry):
@@ -93,7 +93,7 @@ class ChunmiOpenLidJuiceButton(ChunmiCookerBaseButton):
 class ChunmiKeepWarmButton(ChunmiCookerBaseButton):
     """Button to start 保温 directly."""
 
-    _attr_name = "开始保温"
+    _attr_translation_key = "keep_warm"
     _attr_icon = "mdi:heat-wave"
 
     def __init__(self, coordinator: ChunmiCoordinator, config_entry: ConfigEntry):
@@ -103,4 +103,3 @@ class ChunmiKeepWarmButton(ChunmiCookerBaseButton):
     async def async_press(self) -> None:
         """Handle button press."""
         await self.coordinator.async_start_cooking("保温")
-

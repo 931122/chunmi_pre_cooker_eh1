@@ -6,7 +6,7 @@
         "description": "已尝试从 xiaomi_home 官方插件中自动读取 Token 和设备信息。如信息无误，点击“提交”即可完成添加。",
         "data": {
           "host": "设备 IP 地址",
-          "token": "设备 Token (32位)",
+          "token": "设备 Token (32位十六进制)",
           "did": "设备 DID",
           "name": "设备显示名称",
           "model": "设备型号"
@@ -14,26 +14,253 @@
       }
     },
     "error": {
-      "cannot_connect": "无法连接到电压力锅，请检查 IP 地址和局域网通信",
-      "unknown": "发生未知错误"
+      "cannot_connect": "无法连接到电压力锅，请检查 IP 地址和局域网通信。",
+      "unknown": "发生未知错误。"
     },
     "abort": {
-      "already_configured": "该设备已经配置过了"
+      "already_configured": "该设备已经配置过了。"
     }
   },
   "entity": {
     "select": {
       "cook_mode": {
-        "name": "烹饪模式选择"
+        "name": "烹饪模式",
+        "state": {
+          "white_rice": "大米饭",
+          "standard_rice": "标准煮饭",
+          "quick_rice": "极速煮饭",
+          "multigrain_rice": "杂粮饭",
+          "reheat_rice": "热米饭",
+          "open_lid_saute": "开盖收汁",
+          "keep_warm": "保温",
+          "reheat": "再加热",
+          "braised_pork_belly": "红烧肉",
+          "braised_ribs": "红烧排骨",
+          "sweet_sour_ribs": "糖醋排骨",
+          "steamed_ribs_black_bean": "豆豉蒸排骨",
+          "steamed_ribs_sticky_rice": "糯米蒸排骨",
+          "stewed_ribs_potatoes": "土豆炖排骨",
+          "braised_pork": "精炖猪肉",
+          "waterless_baked_ribs": "无水焗排骨",
+          "waterless_baked_chicken": "无水焗鸡",
+          "waterless_baked_beef_lamb": "无水焗牛羊",
+          "braised_chicken_huangmen": "黄焖鸡",
+          "chicken_stew_mushrooms": "小鸡炖蘑菇",
+          "steamed_chicken_mushrooms": "香菇蒸鸡",
+          "braised_poultry": "鲜炖鸡鸭",
+          "braised_chicken_feet": "红烧鸡爪",
+          "braised_chicken_chestnuts": "板栗焖鸡",
+          "beer_duck": "啤酒鸭",
+          "salted_duck": "盐水鸭",
+          "soy_sauce_duck_legs": "酱鸭腿",
+          "spicy_duck_necks": "香辣卤鸭脖",
+          "braised_duck_feet_wings": "卤鸭掌鸭翅",
+          "chicken_feet_soup_beans": "眉豆煲鸡爪",
+          "beef_stew_potatoes": "土豆炖牛肉",
+          "beef_brisket_tomatoes": "番茄牛腩",
+          "braised_beef_stew": "红烩牛肉",
+          "spiced_beef_shank": "卤牛腱",
+          "stewed_beef_tendon": "炖牛筋",
+          "braised_beef_bones": "酱牛骨头",
+          "braised_beef_mutton": "焖炖牛羊",
+          "boiled_lamb_chops": "手抓羊肉",
+          "lamb_brisket_casserole": "枝竹羊腩煲",
+          "lamb_stew_radish": "萝卜焖羊肉",
+          "braised_lamb_spine": "酱羊蝎子",
+          "rock_sugar_pork_shank": "冰糖肘子",
+          "braised_pork_preserved_mustard": "梅干菜烧肉",
+          "pork_bones_sauerkraut": "酸菜炖棒骨",
+          "soy_braised_pork_bones": "酱棒骨",
+          "steamed_pork_rice_flour": "粉蒸肉",
+          "braised_pork_trotters": "红烧猪蹄",
+          "trotters_stew_soybeans": "黄豆炖猪蹄",
+          "trotters_fermented_tofu": "南乳焖猪手",
+          "crystal_pork_skin_jelly": "水晶肉皮冻",
+          "beans_and_tendons": "豆类蹄筋",
+          "rich_soup": "浓香煲汤",
+          "fish_maw_chicken_soup": "花胶鸡汤",
+          "hen_soup": "老母鸡汤",
+          "silkie_chicken_cordyceps": "乌鸡虫草花",
+          "ginseng_chicken_soup": "人参鸡汤",
+          "pork_stomach_chicken_soup": "猪肚鸡汤",
+          "pigeon_soup": "乳鸽汤",
+          "duck_soup_dried_bamboo": "笋干老鸭汤",
+          "duck_soup_pickled_radish": "酸萝卜鸭汤",
+          "duck_soup_solomonseal": "玉竹老鸭汤",
+          "mutton_soup_angelica": "当归羊肉汤",
+          "clear_oxtail_soup": "牛尾清汤",
+          "beef_brisket_radish_soup": "萝卜牛腩汤",
+          "ribs_soup_sweet_corn": "玉米排骨汤",
+          "ribs_soup_kelp": "海带排骨汤",
+          "ribs_soup_barley": "薏米排骨汤",
+          "ribs_soup_scallop": "干贝排骨汤",
+          "pork_bone_soup_sea_coconut": "海底椰骨汤",
+          "yan_du_xian_soup": "腌笃鲜",
+          "bak_kut_teh": "肉骨茶",
+          "borscht": "罗宋汤",
+          "korean_gamjatang": "韩式土豆汤",
+          "pineapple_bitter_melon_soup": "凤梨苦瓜汤",
+          "claypot_rice": "煲仔饭",
+          "shanghai_vegetable_rice": "上海菜饭",
+          "lamb_pilaf": "羊肉手抓饭",
+          "beef_braised_rice": "牛肉焖饭",
+          "cured_meat_sticky_rice": "腊味糯米饭",
+          "red_bean_rice": "红豆饭",
+          "congee_preserved_egg_pork": "皮蛋瘦肉粥",
+          "multigrain_congee": "杂粮米粥",
+          "meiling_congee": "美龄粥",
+          "ribs_congee_scallop": "瑶柱排骨粥",
+          "four_red_congee": "四红粥",
+          "peanut_black_rice_congee": "花生黑米粥",
+          "pumpkin_millet_congee": "南瓜小米粥",
+          "millet_congee": "小米粥",
+          "eight_treasure_congee": "八宝粥",
+          "salted_egg_pork_zongzi": "咸蛋黄肉粽",
+          "purple_rice_date_zongzi": "紫米蜜枣粽子",
+          "snow_pear_white_fungus": "银耳雪梨",
+          "papaya_white_fungus_soup": "木瓜银耳羹",
+          "white_fungus_lotus_seed_soup": "银耳莲子羹",
+          "peach_gum_snow_lotus_seeds": "桃胶皂角米",
+          "sweet_osmanthus_lotus_root": "桂花糖藕",
+          "mung_bean_stuffed_lotus_root": "绿豆酿藕节",
+          "sweet_mung_bean_soup": "冰糖绿豆汤",
+          "mung_bean_soup": "绿豆汤",
+          "mung_bean_lotus_seed_soup": "绿豆莲子汤",
+          "tangerine_peel_red_bean_soup": "陈皮红豆汤",
+          "red_bean_barley_drink": "红豆薏米水",
+          "lemon_barley_water": "柠檬薏米水",
+          "oatmeal_milk": "燕麦牛奶",
+          "mango_black_rice_dessert": "芒果捞黑米",
+          "preserved_plum_kidney_beans": "话梅芸豆",
+          "steamed_sweet_potatoes": "蒸红薯",
+          "mashed_potatoes": "土豆泥"
+        }
       },
       "taste": {
-        "name": "口感偏好"
+        "name": "口感偏好",
+        "state": {
+          "soft_fluffy": "绵软",
+          "tender": "酥软",
+          "soft_glutinous": "软糯",
+          "rich_fragrant": "香浓",
+          "thick": "浓稠",
+          "standard": "适中",
+          "chewy": "嚼劲",
+          "firm": "劲道",
+          "compact": "紧实",
+          "clear": "清亮",
+          "springy": "弹润",
+          "tender_springy": "弹嫩",
+          "fresh": "清鲜"
+        }
       }
     },
     "number": {
       "holding_duration": {
         "name": "保压时间"
       }
+    },
+    "button": {
+      "start_cooking": {
+        "name": "开始烹饪"
+      },
+      "cancel_cooking": {
+        "name": "停止烹饪"
+      },
+      "open_lid_juice": {
+        "name": "开盖收汁"
+      },
+      "keep_warm": {
+        "name": "一键保温"
+      }
+    },
+    "sensor": {
+      "status": {
+        "name": "工作状态",
+        "state": {
+          "standby": "待机",
+          "cooking": "烹饪中",
+          "keep_warm": "保温中",
+          "delayed": "预约中",
+          "paused": "暂停中",
+          "completed": "已完成"
+        }
+      },
+      "phase": {
+        "name": "烹饪阶段",
+        "state": {
+          "idle": "空闲",
+          "preheating": "升温预热",
+          "waiting_lock": "等待锁盖",
+          "pressurizing": "加压升压",
+          "holding_pressure": "高压保压",
+          "depressurizing": "降压排气",
+          "keep_warm": "保温中",
+          "completed": "已完成",
+          "pressure_relief_open": "泄压开盖",
+          "waiting_open": "待开盖",
+          "adding_ingredients": "中途添料",
+          "waiting_continue": "待继续"
+        }
+      },
+      "left_time": {
+        "name": "剩余时间"
+      },
+      "temperature": {
+        "name": "锅内温度"
+      },
+      "pressure": {
+        "name": "当前压力"
+      },
+      "current_menu": {
+        "name": "当前烹饪模式"
+      },
+      "lid_status": {
+        "name": "锅盖状态",
+        "state": {
+          "closed": "合盖",
+          "opened": "开盖"
+        }
+      },
+      "lock_status": {
+        "name": "开盖锁状态",
+        "state": {
+          "locked": "已锁定",
+          "unlocked": "未锁定"
+        }
+      }
+    }
+  },
+  "services": {
+    "start_cooking": {
+      "name": "开始烹饪",
+      "description": "启动纯米电压力锅烹饪程序。",
+      "fields": {
+        "mode": {
+          "name": "烹饪模式",
+          "description": "预设模式标识或中文名称（如 white_rice、soup、大米饭、煲汤等）。"
+        },
+        "taste": {
+          "name": "口感偏好",
+          "description": "口感选择（0 或 soft_glutinous/软糯、1 或 standard/适中、2 或 chewy/嚼劲）。"
+        },
+        "duration": {
+          "name": "保压时间 (分钟)",
+          "description": "自定义保压时间（通常在 5~60 分钟之间）。"
+        },
+        "cook_code": {
+          "name": "自定义加热曲线码",
+          "description": "纯米专属 358 位 Hex 加热曲线代码。"
+        },
+        "name": {
+          "name": "菜谱显示名称",
+          "description": "显示在锅体屏幕上的菜谱名称（最多 7 个字符）。"
+        }
+      }
+    },
+    "cancel_cooking": {
+      "name": "停止烹饪",
+      "description": "终止当前烹饪程序或保温。"
     }
   }
 }

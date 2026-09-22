@@ -24,7 +24,7 @@ class ChunmiHoldingDurationNumber(CoordinatorEntity[ChunmiCoordinator], NumberEn
     """Number entity to adjust holding pressure duration (保压时间)."""
 
     _attr_has_entity_name = True
-    _attr_name = "保压时间"
+    _attr_translation_key = "holding_duration"
     _attr_icon = "mdi:timer-cog-outline"
     _attr_native_unit_of_measurement = "min"
     _attr_native_step = 1.0

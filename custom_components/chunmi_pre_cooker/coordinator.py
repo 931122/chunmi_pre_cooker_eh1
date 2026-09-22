@@ -11,15 +11,19 @@ from homeassistant.exceptions import HomeAssistantError
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
 
 from .const import (
+    ALL_MODES_ESTIMATED_TIME_CACHE,
     DOMAIN,
     PRESET_COOK_MODES,
-    ALL_MODES_ESTIMATED_TIME_CACHE,
     customize_cook_code,
     get_holding_duration_from_code,
     get_mode_base_overhead,
     get_mode_duration_limits,
     get_mode_taste_names,
     get_mode_total_estimated_time,
+    resolve_mode_name,
+    resolve_mode_slug,
+    resolve_taste_slug,
+    resolve_taste_zh,
 )
 from .device import ChunmiDevice
 from .recipe_details import get_recipe_detail
@@ -41,6 +45,21 @@ class ChunmiCoordinator(DataUpdateCoordinator[Dict[str, Any]]):
         self.selected_mode = "大米饭"
         self.selected_taste_idx = 1  # 0: 偏软/软糯, 1: 适中, 2: 偏硬/嚼劲
         self.selected_duration = 15  # minutes
+
+    @property
+    def selected_mode_slug(self) -> str:
+        """Return slug of currently selected mode."""
+        return resolve_mode_slug(self.selected_mode)
+
+    @property
+    def current_mode_taste_slugs(self) -> list:
+        """Return available taste option slugs for current mode."""
+        return [resolve_taste_slug(t) for t in self.current_mode_taste_options]
+
+    @property
+    def current_taste_slug(self) -> str:
+        """Return slug of currently selected taste."""
+        return resolve_taste_slug(self.current_taste_name)
 
     @property
     def current_mode_preset(self) -> Dict[str, Any]:
@@ -97,8 +116,9 @@ class ChunmiCoordinator(DataUpdateCoordinator[Dict[str, Any]]):
 
     async def async_set_selected_mode(self, mode: str) -> None:
         """Set selected cooking mode and reset taste and duration to defaults."""
-        if mode in PRESET_COOK_MODES:
-            self.selected_mode = mode
+        mode_name = resolve_mode_name(mode)
+        if mode_name in PRESET_COOK_MODES:
+            self.selected_mode = mode_name
             self.selected_taste_idx = 1  # Reset to 适中
             min_dur, max_dur, def_dur = self.current_mode_duration_limits
             self.selected_duration = def_dur
@@ -106,9 +126,10 @@ class ChunmiCoordinator(DataUpdateCoordinator[Dict[str, Any]]):
 
     async def async_set_selected_taste(self, taste_name: str) -> None:
         """Set selected taste option and adjust default holding duration."""
+        taste_zh = resolve_taste_zh(taste_name)
         options = self.current_mode_taste_options
-        if taste_name in options:
-            self.selected_taste_idx = options.index(taste_name)
+        if taste_zh in options:
+            self.selected_taste_idx = options.index(taste_zh)
             code = self.current_mode_preset["cook_code"]
             self.selected_duration = get_holding_duration_from_code(code, self.selected_taste_idx)
             self.async_update_listeners()
@@ -144,12 +165,12 @@ class ChunmiCoordinator(DataUpdateCoordinator[Dict[str, Any]]):
         duration: int = None,
     ) -> bool:
         """Trigger start cooking with customized taste and duration."""
-        mode = mode_name or self.selected_mode
-        if mode not in PRESET_COOK_MODES:
-            _LOGGER.error("Unknown cooking mode: %s", mode)
+        mode_resolved = resolve_mode_name(mode_name) if mode_name else self.selected_mode
+        if mode_resolved not in PRESET_COOK_MODES:
+            _LOGGER.error("Unknown cooking mode: %s", mode_name)
             return False
 
-        preset = PRESET_COOK_MODES[mode]
+        preset = PRESET_COOK_MODES[mode_resolved]
 
         # Resolve taste index
         t_idx = self.selected_taste_idx
@@ -157,12 +178,15 @@ class ChunmiCoordinator(DataUpdateCoordinator[Dict[str, Any]]):
             if isinstance(taste, int) and 0 <= taste <= 2:
                 t_idx = taste
             elif isinstance(taste, str):
+                taste_zh = resolve_taste_zh(taste)
                 options = get_mode_taste_names(preset["cook_code"])
-                if taste in options:
+                if taste_zh in options:
+                    t_idx = options.index(taste_zh)
+                elif taste in options:
                     t_idx = options.index(taste)
-                elif "软" in taste or "烂" in taste:
+                elif "软" in taste_zh or "烂" in taste_zh or "soft" in taste.lower():
                     t_idx = 0
-                elif "硬" in taste or "嚼" in taste or "弹" in taste:
+                elif "硬" in taste_zh or "嚼" in taste_zh or "firm" in taste.lower() or "chewy" in taste.lower():
                     t_idx = 2
                 else:
                     t_idx = 1

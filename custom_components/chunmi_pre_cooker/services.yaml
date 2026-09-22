@@ -1,22 +1,22 @@
 start_cooking:
-  name: 开始烹饪
-  description: 启动纯米电压力锅烹饪程序
+  name: Start Cooking
+  description: Start a cooking program on the Chunmi electric pressure cooker.
   fields:
     mode:
-      name: 烹饪模式
-      description: 预设模式名称（如 大米饭、杂粮饭、土豆炖排骨等）
-      example: 大米饭
+      name: Cooking Mode
+      description: Preset mode slug or Chinese name (e.g., white_rice, soup, 大米饭, 煲汤).
+      example: white_rice
       selector:
         text:
     taste:
-      name: 口感偏好
-      description: 口感选择（0 或 软糯/酥软、1 或 适中、2 或 嚼劲/弹润）
-      example: 软糯
+      name: Taste Preference
+      description: Taste selection (0 or soft_glutinous/软糯, 1 or standard/适中, 2 or chewy/嚼劲).
+      example: standard
       selector:
         text:
     duration:
-      name: 保压时间 (分钟)
-      description: 自定义保压时间（根据模式在 6~60 分钟之间）
+      name: Holding Duration (Minutes)
+      description: Custom holding pressure duration in minutes (usually between 5~60 min).
       example: 20
       selector:
         number:
@@ -24,18 +24,18 @@ start_cooking:
           max: 120
           unit_of_measurement: min
     cook_code:
-      name: 自定义加热曲线码
-      description: 纯米专属358位Hex加热曲线代码
+      name: Custom Heating Profile Code
+      description: Custom 358-character Hex heating profile.
       example: "020104..."
       selector:
         text:
     name:
-      name: 菜谱显示名称
-      description: 显示在锅体屏幕上的菜谱名称
-      example: 大米饭
+      name: Recipe Display Name
+      description: Custom name to display on cooker screen (up to 7 characters).
+      example: White Rice
       selector:
         text:
 
 cancel_cooking:
-  name: 停止烹饪
-  description: 终止当前烹饪程序或保温
+  name: Stop Cooking
+  description: Cancel the current cooking program or keep-warm mode.
